@@ -40,11 +40,6 @@ def get_last_chat_id_and_text(updates):
     chat_id = updates ["result"][last_update]["message"]["chat"]["id"]
     return (text, chat_id)
 
-"""def send_message(text, chat_id):
-    text =  urllib.pathname2url(text)
-    url = URL + "sendMessage?text={}&chat_id={}".format(text, chat_id)
-    get_url(url)"""
-
 def send_message(text, chat_id, reply_markup=None):
     text = urllib.pathname2url(text)
     url = URL + "sendMessage?text={}&chat_id={}&parse_mode=Markdown".format(text, chat_id)
@@ -70,10 +65,17 @@ def handle_updates(updates):
             message = "\n".join(items)
             send_message(message, chat)
         elif text in items:
+            items = db.get_items(chat)
+            print len(items)
             db.delete_item(text,chat)
             items = db.get_items(chat)
-            keyboard = build_keyboard(items)
-            send_message("Select an item to delete", chat, keyboard)
+            print (len(items))
+            if len(items)==1:
+                keyboard = build_keyboard(items)
+                send_message("List Empty, click to add an item", chat)
+            else:
+                keyboard = build_keyboard(items)
+                send_message("Select an item to delete", chat, keyboard)
         else:
             db.add_item(text,chat)
             items = db.get_items(chat)
